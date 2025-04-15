@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -23,7 +22,8 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![T::default()],
+            // here insert a elem 0 to make the index start from 1
+            items: vec![T::default()],  
             comparator,
         }
     }
@@ -38,6 +38,18 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.count += 1;
+        self.items.push(value);
+        let mut now = self.count;
+        while now > 1 {
+            let parent = self.parent_idx(now);
+            if (self.comparator)(&self.items[now], &self.items[parent]) {
+                self.items.swap(now, parent);
+                now = parent;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,7 +70,38 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		let l = self.left_child_idx(idx);
+        let r = self.right_child_idx(idx);
+        if l > self.count {
+            // it means no child
+            return 0;
+        }
+        if r > self.count {
+            return l;
+        }
+        if (self.comparator)(&self.items[l], &self.items[r]) {
+            l
+        } else {
+            r
+        }
+    }
+    
+    fn push_down(&mut self){
+        if self.is_empty() {
+            return;
+        }
+        let mut now = 1;
+        loop {
+            let child = self.smallest_child_idx(now);
+            if child == 0 {
+                break;
+            }
+            if (self.comparator)(&self.items[now], &self.items[child]) {
+                break;
+            }
+            self.items.swap(now, child);
+            now = child
+        }
     }
 }
 
@@ -85,7 +128,13 @@ where
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        self.items.swap(1, self.count);
+        self.count -= 1;
+        self.push_down();
+        self.items.pop()
     }
 }
 
